@@ -4,24 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Free Fire Account Checker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #ff6b35;
+            --secondary: #2f3061;
+            --accent: #f7c59f;
+            --dark: #0e0e2c;
+            --light: #f8f9fa;
+            --success: #5cb85c;
+            --danger: #d9534f;
+            --warning: #f0ad4e;
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background: linear-gradient(135deg, var(--secondary), var(--dark));
+            color: var(--light);
             min-height: 100vh;
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            color: #fff;
         }
         
         .container {
@@ -34,88 +44,134 @@
             text-align: center;
             margin-bottom: 30px;
             padding: 20px;
+            width: 100%;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .logo i {
+            font-size: 2.5rem;
+            color: var(--primary);
         }
         
         header h1 {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         
         header p {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
         }
         
         .search-box {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(10px);
             padding: 25px;
             border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             margin-bottom: 30px;
             width: 100%;
-            max-width: 600px;
+            max-width: 650px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .input-group {
             display: flex;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
         .input-group input {
             flex: 1;
-            padding: 15px;
+            padding: 16px 20px;
             border: none;
-            border-radius: 8px 0 0 8px;
-            font-size: 1rem;
+            border-radius: 10px 0 0 10px;
+            font-size: 1.1rem;
             background: rgba(255, 255, 255, 0.9);
+            color: var(--dark);
+            outline: none;
+        }
+        
+        .input-group input::placeholder {
+            color: #666;
         }
         
         .input-group button {
-            padding: 15px 25px;
+            padding: 16px 30px;
             border: none;
-            border-radius: 0 8px 8px 0;
-            background: #ff6b6b;
+            border-radius: 0 10px 10px 0;
+            background: var(--primary);
             color: white;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s;
+            font-size: 1.1rem;
         }
         
         .input-group button:hover {
-            background: #ff5252;
+            background: #e55a2b;
+            transform: translateY(-2px);
+        }
+        
+        .input-group button:active {
+            transform: translateY(0);
+        }
+        
+        .example {
+            text-align: center;
+            font-size: 0.95rem;
+            opacity: 0.8;
         }
         
         .results {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+            gap: 25px;
             width: 100%;
+            margin-bottom: 40px;
         }
         
         .card {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(10px);
             border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
         }
         
         .card-header {
             background: rgba(0, 0, 0, 0.3);
-            padding: 15px;
+            padding: 18px;
             text-align: center;
             font-weight: 600;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         
         .card-body {
-            padding: 20px;
+            padding: 25px;
         }
         
         .profile-card {
@@ -125,57 +181,69 @@
         .profile-card img {
             width: 100%;
             border-radius: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             border: 3px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         
         .info-item {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
-            padding-bottom: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .info-item span:first-child {
+            font-weight: 600;
+            color: var(--accent);
         }
         
         .ban-status {
             text-align: center;
-            padding: 20px;
-            font-size: 1.2rem;
+            padding: 25px;
+            font-size: 1.3rem;
             font-weight: 600;
         }
         
         .banned {
-            color: #ff6b6b;
+            color: var(--danger);
         }
         
         .not-banned {
-            color: #6bff6b;
+            color: var(--success);
         }
         
         .outfit-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
         }
         
         .outfit-item {
             background: rgba(255, 255, 255, 0.05);
-            padding: 10px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 10px;
             text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .outfit-item:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.1);
         }
         
         .outfit-item img {
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 8px;
+            border-radius: 10px;
+            margin-bottom: 10px;
             border: 2px solid rgba(255, 255, 255, 0.2);
         }
         
         .outfit-name {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -184,13 +252,18 @@
         .loading {
             display: none;
             text-align: center;
-            padding: 30px;
+            padding: 40px;
         }
         
         .loading i {
-            font-size: 2rem;
-            margin-bottom: 15px;
-            animation: spin 1s linear infinite;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            animation: spin 1.5s linear infinite;
+        }
+        
+        .loading p {
+            font-size: 1.2rem;
         }
         
         @keyframes spin {
@@ -201,17 +274,42 @@
         .error {
             display: none;
             text-align: center;
-            padding: 20px;
-            background: rgba(255, 0, 0, 0.2);
+            padding: 25px;
+            background: rgba(217, 83, 79, 0.2);
             border-radius: 10px;
-            margin-top: 20px;
+            margin: 20px 0;
+            border-left: 5px solid var(--danger);
         }
         
         footer {
-            margin-top: 40px;
+            margin-top: auto;
             text-align: center;
+            padding: 25px;
             opacity: 0.7;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            width: 100%;
+        }
+        
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+        
+        .feature {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 200px;
+        }
+        
+        .feature i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 15px;
         }
         
         @media (max-width: 768px) {
@@ -224,16 +322,20 @@
             }
             
             .input-group input {
-                border-radius: 8px;
+                border-radius: 10px;
                 margin-bottom: 10px;
             }
             
             .input-group button {
-                border-radius: 8px;
+                border-radius: 10px;
             }
             
             .outfit-container {
                 grid-template-columns: repeat(2, 1fr);
+            }
+            
+            header h1 {
+                font-size: 2.2rem;
             }
         }
     </style>
@@ -241,16 +343,42 @@
 <body>
     <div class="container">
         <header>
-            <h1>Free Fire Account Checker</h1>
+            <div class="logo">
+                <i class="fas fa-fire"></i>
+                <h1>Free Fire Account Checker</h1>
+            </div>
             <p>Kiểm tra thông tin tài khoản Free Fire nhanh chóng và dễ dàng</p>
         </header>
+        
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-ban"></i>
+                <h3>Check Ban</h3>
+                <p>Kiểm tra tình trạng tài khoản</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-user"></i>
+                <h3>Thông Tin</h3>
+                <p>Xem thông tin tài khoản</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-id-card"></i>
+                <h3>Ảnh Bìa</h3>
+                <p>Xem ảnh bìa hồ sơ</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-tshirt"></i>
+                <h3>Trang Phục</h3>
+                <p>Xem trang phục đang mặc</p>
+            </div>
+        </div>
         
         <div class="search-box">
             <div class="input-group">
                 <input type="text" id="uidInput" placeholder="Nhập UID tài khoản Free Fire...">
                 <button id="checkButton"><i class="fas fa-search"></i> Kiểm tra</button>
             </div>
-            <p>Ví dụ: 1234567890</p>
+            <p class="example">Ví dụ: 1234567890</p>
         </div>
         
         <div class="loading" id="loading">
@@ -304,6 +432,7 @@
         
         <footer>
             <p>Free Fire Account Checker &copy; 2023 - Công cụ kiểm tra thông tin tài khoản Free Fire</p>
+            <p>Triển khai trên Vercel</p>
         </footer>
     </div>
 
@@ -427,7 +556,7 @@
                                     if (item && item.name) {
                                         html += `
                                             <div class="outfit-item">
-                                                <img src="${item.icon || 'https://via.placeholder.com/60'}" alt="${item.name}">
+                                                <img src="${item.icon || 'https://via.placeholder.com/70'}" alt="${item.name}">
                                                 <div class="outfit-name">${item.name}</div>
                                             </div>
                                         `;
@@ -460,7 +589,8 @@
                     'diamond': 'Kim cương',
                     'rank': 'Hạng',
                     'kills': 'Số kill',
-                    'matches': 'Số trận'
+                    'matches': 'Số trận',
+                    'kd': 'Tỷ lệ Kill/Death'
                 };
                 
                 return keyMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -477,6 +607,13 @@
                 banStatus.innerHTML = '<p>Đang kiểm tra...</p>';
                 outfitInfo.innerHTML = '<p>Đang tải trang phục...</p>';
             }
+            
+            // Cho phép nhấn Enter để gửi
+            uidInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkButton.click();
+                }
+            });
         });
     </script>
 </body>
