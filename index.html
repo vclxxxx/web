@@ -331,6 +331,42 @@
             font-size: 0.9rem;
         }
         
+        .manual-data {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .manual-data h3 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: var(--accent);
+        }
+        
+        .manual-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .manual-input input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .manual-input button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+        }
+        
         @media (max-width: 768px) {
             .results {
                 grid-template-columns: 1fr;
@@ -365,6 +401,10 @@
             .feature {
                 width: 100%;
                 max-width: 300px;
+            }
+            
+            .manual-input {
+                flex-direction: column;
             }
         }
     </style>
@@ -424,7 +464,19 @@
         </div>
         
         <div class="note">
-            <p><i class="fas fa-info-circle"></i> Ứng dụng có thể gặp một số hạn chế do chính sách CORS của trình duyệt. Nếu không thể tải dữ liệu, vui lòng thử lại sau.</p>
+            <p><i class="fas fa-info-circle"></i> Ứng dụng có thể gặp một số hạn chế do chính sách CORS của trình duyệt. Nếu không thể tải dữ liệu, vui lòng thử lại sau hoặc sử dụng chức năng nhập thủ công bên dưới.</p>
+        </div>
+        
+        <div class="manual-data">
+            <h3><i class="fas fa-edit"></i> Nhập thông tin thủ công</h3>
+            <div class="manual-input">
+                <input type="text" id="manualImageUrl" placeholder="URL ảnh bìa (base64 hoặc URL)">
+                <button id="setImageBtn">Áp dụng ảnh</button>
+            </div>
+            <div class="manual-input">
+                <input type="text" id="manualStatus" placeholder="Trạng thái (Banned/Not Banned)">
+                <button id="setStatusBtn">Áp dụng trạng thái</button>
+            </div>
         </div>
         
         <div class="results" id="results">
@@ -486,9 +538,39 @@
             const accountInfo = document.getElementById('accountInfo');
             const banStatus = document.getElementById('banStatus');
             const outfitInfo = document.getElementById('outfitInfo');
+            const manualImageUrl = document.getElementById('manualImageUrl');
+            const manualStatus = document.getElementById('manualStatus');
+            const setImageBtn = document.getElementById('setImageBtn');
+            const setStatusBtn = document.getElementById('setStatusBtn');
             
             // Hiển thị cảnh báo về CORS
             showWarning('Một số tính năng có thể không hoạt động do hạn chế CORS. Vui lòng thử lại sau nếu gặp lỗi.');
+            
+            // Xử lý nhập thủ công
+            setImageBtn.addEventListener('click', function() {
+                const url = manualImageUrl.value.trim();
+                if (url) {
+                    if (url.startsWith('data:image')) {
+                        profileCard.innerHTML = `<img src="${url}" alt="Profile Card">`;
+                    } else if (url.startsWith('http')) {
+                        profileCard.innerHTML = `<img src="${url}" alt="Profile Card">`;
+                    } else {
+                        // Giả sử là base64
+                        profileCard.innerHTML = `<img src="data:image/png;base64,${url}" alt="Profile Card">`;
+                    }
+                    showWarning('Đã áp dụng ảnh thủ công');
+                }
+            });
+            
+            setStatusBtn.addEventListener('click', function() {
+                const status = manualStatus.value.trim().toLowerCase();
+                if (status.includes('not') || status.includes('không')) {
+                    banStatus.innerHTML = '<p class="not-banned"><i class="fas fa-check-circle"></i> Tài khoản không bị ban</p>';
+                } else if (status.includes('ban') || status.includes('cấm')) {
+                    banStatus.innerHTML = '<p class="banned"><i class="fas fa-times-circle"></i> Tài khoản đã bị ban</p>';
+                }
+                showWarning('Đã áp dụng trạng thái thủ công');
+            });
             
             checkButton.addEventListener('click', function() {
                 const uid = uidInput.value.trim();
@@ -509,139 +591,138 @@
                 error.style.display = 'none';
                 warning.style.display = 'none';
                 
-                // Gọi các API
-                Promise.allSettled([
-                    checkBan(uid),
-                    getAccountInfo(uid),
-                    getProfileCard(uid),
-                    getOutfitInfo(uid)
-                ]).then(() => {
+                // Gọi các API sử dụng JSONP
+                checkBan(uid);
+                getAccountInfo(uid);
+                getProfileCard(uid);
+                getOutfitInfo(uid);
+                
+                // Ẩn loading sau 5 giây
+                setTimeout(() => {
                     loading.style.display = 'none';
-                }).catch(err => {
-                    loading.style.display = 'none';
-                    showError('Có lỗi xảy ra khi tải dữ liệu: ' + err.message);
-                });
+                }, 5000);
             });
             
             function checkBan(uid) {
-                return fetch(`http://raw.thug4ff.com/check_ban/${uid}`, { mode: 'no-cors' })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Không thể kết nối đến server');
-                        }
-                        return response.text();
-                    })
-                    .then(data => {
-                        if (data.includes('not banned') || data.includes('false') || data === '0') {
-                            banStatus.innerHTML = '<p class="not-banned"><i class="fas fa-check-circle"></i> Tài khoản không bị ban</p>';
-                        } else if (data.includes('banned') || data.includes('true') || data === '1') {
-                            banStatus.innerHTML = '<p class="banned"><i class="fas fa-times-circle"></i> Tài khoản đã bị ban</p>';
-                        } else {
-                            banStatus.innerHTML = `<p>Kết quả: ${data}</p>`;
-                        }
-                    })
-                    .catch(err => {
-                        banStatus.innerHTML = '<p>Không thể kiểm tra tình trạng ban. Vui lòng thử lại sau.</p>';
-                        console.error('Error checking ban status:', err);
-                    });
+                // Sử dụng JSONP để vượt CORS
+                const script = document.createElement('script');
+                script.src = `http://raw.thug4ff.com/check_ban/${uid}?callback=handleBanResponse`;
+                document.body.appendChild(script);
+                
+                // Xóa script sau khi tải
+                setTimeout(() => {
+                    document.body.removeChild(script);
+                }, 1000);
             }
             
             function getAccountInfo(uid) {
-                return fetch(`http://raw.thug4ff.com/info?uid=${uid}`, { mode: 'no-cors' })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Không thể kết nối đến server');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        let html = '';
-                        if (data && typeof data === 'object') {
-                            for (const key in data) {
-                                if (data.hasOwnProperty(key)) {
-                                    html += `
-                                        <div class="info-item">
-                                            <span>${formatKey(key)}:</span>
-                                            <span>${data[key] || 'N/A'}</span>
-                                        </div>
-                                    `;
-                                }
-                            }
-                        } else {
-                            html = '<p>Không có thông tin tài khoản</p>';
-                        }
-                        accountInfo.innerHTML = html;
-                    })
-                    .catch(err => {
-                        accountInfo.innerHTML = '<p>Không thể tải thông tin tài khoản. Vui lòng thử lại sau.</p>';
-                        console.error('Error fetching account info:', err);
-                    });
+                // Sử dụng JSONP để vượt CORS
+                const script = document.createElement('script');
+                script.src = `http://raw.thug4ff.com/info?uid=${uid}&callback=handleInfoResponse`;
+                document.body.appendChild(script);
+                
+                // Xóa script sau khi tải
+                setTimeout(() => {
+                    document.body.removeChild(script);
+                }, 1000);
             }
             
             function getProfileCard(uid) {
-                return fetch(`http://profile.thug4ff.com/api/profile_card?uid=${uid}`, { mode: 'no-cors' })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Không thể kết nối đến server');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data && data.success && data.data && data.data.card) {
-                            profileCard.innerHTML = `<img src="data:image/png;base64,${data.data.card}" alt="Profile Card">`;
-                        } else {
-                            profileCard.innerHTML = '<p>Không thể tải ảnh bìa hồ sơ</p>';
-                        }
-                    })
-                    .catch(err => {
-                        profileCard.innerHTML = '<p>Không thể tải ảnh bìa hồ sơ. Vui lòng thử lại sau.</p>';
-                        console.error('Error fetching profile card:', err);
-                    });
+                // Sử dụng JSONP để vượt CORS
+                const script = document.createElement('script');
+                script.src = `http://profile.thug4ff.com/api/profile_card?uid=${uid}&callback=handleProfileCardResponse`;
+                document.body.appendChild(script);
+                
+                // Xóa script sau khi tải
+                setTimeout(() => {
+                    document.body.removeChild(script);
+                }, 1000);
             }
             
             function getOutfitInfo(uid) {
-                return fetch(`http://profile.thug4ff.com/api/profile?uid=${uid}`, { mode: 'no-cors' })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Không thể kết nối đến server');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        let html = '';
-                        if (data && data.success && data.data && data.data.wearing) {
-                            const wearing = data.data.wearing;
-                            html = '<div class="outfit-container">';
-                            
-                            for (const key in wearing) {
-                                if (wearing.hasOwnProperty(key)) {
-                                    const item = wearing[key];
-                                    if (item && item.name) {
-                                        html += `
-                                            <div class="outfit-item">
-                                                <img src="${item.icon || 'https://via.placeholder.com/70'}" alt="${item.name}">
-                                                <div class="outfit-name">${item.name}</div>
-                                            </div>
-                                        `;
-                                    }
-                                }
-                            }
-                            
-                            html += '</div>';
-                            
-                            if (html === '<div class="outfit-container"></div>') {
-                                html = '<p>Không có thông tin trang phục</p>';
-                            }
-                        } else {
-                            html = '<p>Không có thông tin trang phục</p>';
-                        }
-                        outfitInfo.innerHTML = html;
-                    })
-                    .catch(err => {
-                        outfitInfo.innerHTML = '<p>Không thể tải thông tin trang phục. Vui lòng thử lại sau.</p>';
-                        console.error('Error fetching outfit info:', err);
-                    });
+                // Sử dụng JSONP để vượt CORS
+                const script = document.createElement('script');
+                script.src = `http://profile.thug4ff.com/api/profile?uid=${uid}&callback=handleOutfitResponse`;
+                document.body.appendChild(script);
+                
+                // Xóa script sau khi tải
+                setTimeout(() => {
+                    document.body.removeChild(script);
+                }, 1000);
             }
+            
+            // Hàm xử lý response cho JSONP
+            window.handleBanResponse = function(data) {
+                loading.style.display = 'none';
+                if (data && (data.includes('not banned') || data.includes('false') || data === '0')) {
+                    banStatus.innerHTML = '<p class="not-banned"><i class="fas fa-check-circle"></i> Tài khoản không bị ban</p>';
+                } else if (data && (data.includes('banned') || data.includes('true') || data === '1')) {
+                    banStatus.innerHTML = '<p class="banned"><i class="fas fa-times-circle"></i> Tài khoản đã bị ban</p>';
+                } else {
+                    banStatus.innerHTML = `<p>Kết quả: ${data || 'Không xác định'}</p>`;
+                }
+            };
+            
+            window.handleInfoResponse = function(data) {
+                loading.style.display = 'none';
+                let html = '';
+                if (data && typeof data === 'object') {
+                    for (const key in data) {
+                        if (data.hasOwnProperty(key)) {
+                            html += `
+                                <div class="info-item">
+                                    <span>${formatKey(key)}:</span>
+                                    <span>${data[key] || 'N/A'}</span>
+                                </div>
+                            `;
+                        }
+                    }
+                } else {
+                    html = '<p>Không có thông tin tài khoản</p>';
+                }
+                accountInfo.innerHTML = html;
+            };
+            
+            window.handleProfileCardResponse = function(data) {
+                loading.style.display = 'none';
+                if (data && data.success && data.data && data.data.card) {
+                    profileCard.innerHTML = `<img src="data:image/png;base64,${data.data.card}" alt="Profile Card">`;
+                } else {
+                    profileCard.innerHTML = '<p>Không thể tải ảnh bìa hồ sơ</p>';
+                }
+            };
+            
+            window.handleOutfitResponse = function(data) {
+                loading.style.display = 'none';
+                let html = '';
+                if (data && data.success && data.data && data.data.wearing) {
+                    const wearing = data.data.wearing;
+                    html = '<div class="outfit-container">';
+                    
+                    for (const key in wearing) {
+                        if (wearing.hasOwnProperty(key)) {
+                            const item = wearing[key];
+                            if (item && item.name) {
+                                html += `
+                                    <div class="outfit-item">
+                                        <img src="${item.icon || 'https://via.placeholder.com/70'}" alt="${item.name}">
+                                        <div class="outfit-name">${item.name}</div>
+                                    </div>
+                                `;
+                            }
+                        }
+                    }
+                    
+                    html += '</div>';
+                    
+                    if (html === '<div class="outfit-container"></div>') {
+                        html = '<p>Không có thông tin trang phục</p>';
+                    }
+                } else {
+                    html = '<p>Không có thông tin trang phục</p>';
+                }
+                outfitInfo.innerHTML = html;
+            };
             
             function formatKey(key) {
                 const keyMap = {
