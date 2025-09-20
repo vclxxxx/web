@@ -281,6 +281,16 @@
             border-left: 5px solid var(--danger);
         }
         
+        .warning {
+            display: none;
+            text-align: center;
+            padding: 15px;
+            background: rgba(240, 173, 78, 0.2);
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 5px solid var(--warning);
+        }
+        
         footer {
             margin-top: auto;
             text-align: center;
@@ -312,6 +322,15 @@
             margin-bottom: 15px;
         }
         
+        .note {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
         @media (max-width: 768px) {
             .results {
                 grid-template-columns: 1fr;
@@ -336,6 +355,16 @@
             
             header h1 {
                 font-size: 2.2rem;
+            }
+            
+            .features {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .feature {
+                width: 100%;
+                max-width: 300px;
             }
         }
     </style>
@@ -381,6 +410,10 @@
             <p class="example">Ví dụ: 1234567890</p>
         </div>
         
+        <div class="warning" id="warning">
+            <p><i class="fas fa-exclamation-triangle"></i> <span id="warningMessage"></span></p>
+        </div>
+        
         <div class="loading" id="loading">
             <i class="fas fa-spinner"></i>
             <p>Đang tải dữ liệu...</p>
@@ -388,6 +421,10 @@
         
         <div class="error" id="error">
             <p><i class="fas fa-exclamation-circle"></i> <span id="errorMessage"></span></p>
+        </div>
+        
+        <div class="note">
+            <p><i class="fas fa-info-circle"></i> Ứng dụng có thể gặp một số hạn chế do chính sách CORS của trình duyệt. Nếu không thể tải dữ liệu, vui lòng thử lại sau.</p>
         </div>
         
         <div class="results" id="results">
@@ -442,11 +479,16 @@
             const checkButton = document.getElementById('checkButton');
             const loading = document.getElementById('loading');
             const error = document.getElementById('error');
+            const warning = document.getElementById('warning');
             const errorMessage = document.getElementById('errorMessage');
+            const warningMessage = document.getElementById('warningMessage');
             const profileCard = document.getElementById('profileCard');
             const accountInfo = document.getElementById('accountInfo');
             const banStatus = document.getElementById('banStatus');
             const outfitInfo = document.getElementById('outfitInfo');
+            
+            // Hiển thị cảnh báo về CORS
+            showWarning('Một số tính năng có thể không hoạt động do hạn chế CORS. Vui lòng thử lại sau nếu gặp lỗi.');
             
             checkButton.addEventListener('click', function() {
                 const uid = uidInput.value.trim();
@@ -465,9 +507,10 @@
                 resetResults();
                 loading.style.display = 'block';
                 error.style.display = 'none';
+                warning.style.display = 'none';
                 
                 // Gọi các API
-                Promise.all([
+                Promise.allSettled([
                     checkBan(uid),
                     getAccountInfo(uid),
                     getProfileCard(uid),
@@ -481,8 +524,13 @@
             });
             
             function checkBan(uid) {
-                return fetch(`https://corsproxy.io/?http://raw.thug4ff.com/check_ban/${uid}`)
-                    .then(response => response.text())
+                return fetch(`http://raw.thug4ff.com/check_ban/${uid}`, { mode: 'no-cors' })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Không thể kết nối đến server');
+                        }
+                        return response.text();
+                    })
                     .then(data => {
                         if (data.includes('not banned') || data.includes('false') || data === '0') {
                             banStatus.innerHTML = '<p class="not-banned"><i class="fas fa-check-circle"></i> Tài khoản không bị ban</p>';
@@ -493,14 +541,19 @@
                         }
                     })
                     .catch(err => {
-                        banStatus.innerHTML = '<p>Không thể kiểm tra tình trạng ban</p>';
+                        banStatus.innerHTML = '<p>Không thể kiểm tra tình trạng ban. Vui lòng thử lại sau.</p>';
                         console.error('Error checking ban status:', err);
                     });
             }
             
             function getAccountInfo(uid) {
-                return fetch(`https://corsproxy.io/?http://raw.thug4ff.com/info?uid=${uid}`)
-                    .then(response => response.json())
+                return fetch(`http://raw.thug4ff.com/info?uid=${uid}`, { mode: 'no-cors' })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Không thể kết nối đến server');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         let html = '';
                         if (data && typeof data === 'object') {
@@ -520,14 +573,19 @@
                         accountInfo.innerHTML = html;
                     })
                     .catch(err => {
-                        accountInfo.innerHTML = '<p>Không thể tải thông tin tài khoản</p>';
+                        accountInfo.innerHTML = '<p>Không thể tải thông tin tài khoản. Vui lòng thử lại sau.</p>';
                         console.error('Error fetching account info:', err);
                     });
             }
             
             function getProfileCard(uid) {
-                return fetch(`https://corsproxy.io/?http://profile.thug4ff.com/api/profile_card?uid=${uid}`)
-                    .then(response => response.json())
+                return fetch(`http://profile.thug4ff.com/api/profile_card?uid=${uid}`, { mode: 'no-cors' })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Không thể kết nối đến server');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data && data.success && data.data && data.data.card) {
                             profileCard.innerHTML = `<img src="data:image/png;base64,${data.data.card}" alt="Profile Card">`;
@@ -536,14 +594,19 @@
                         }
                     })
                     .catch(err => {
-                        profileCard.innerHTML = '<p>Không thể tải ảnh bìa hồ sơ</p>';
+                        profileCard.innerHTML = '<p>Không thể tải ảnh bìa hồ sơ. Vui lòng thử lại sau.</p>';
                         console.error('Error fetching profile card:', err);
                     });
             }
             
             function getOutfitInfo(uid) {
-                return fetch(`https://corsproxy.io/?http://profile.thug4ff.com/api/profile?uid=${uid}`)
-                    .then(response => response.json())
+                return fetch(`http://profile.thug4ff.com/api/profile?uid=${uid}`, { mode: 'no-cors' })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Không thể kết nối đến server');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         let html = '';
                         if (data && data.success && data.data && data.data.wearing) {
@@ -575,7 +638,7 @@
                         outfitInfo.innerHTML = html;
                     })
                     .catch(err => {
-                        outfitInfo.innerHTML = '<p>Không thể tải thông tin trang phục</p>';
+                        outfitInfo.innerHTML = '<p>Không thể tải thông tin trang phục. Vui lòng thử lại sau.</p>';
                         console.error('Error fetching outfit info:', err);
                     });
             }
@@ -599,6 +662,11 @@
             function showError(message) {
                 errorMessage.textContent = message;
                 error.style.display = 'block';
+            }
+            
+            function showWarning(message) {
+                warningMessage.textContent = message;
+                warning.style.display = 'block';
             }
             
             function resetResults() {
