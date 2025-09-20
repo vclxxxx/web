@@ -152,13 +152,17 @@
             color: #6bff6b;
         }
         
+        .outfit-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+        }
+        
         .outfit-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
             background: rgba(255, 255, 255, 0.05);
             padding: 10px;
             border-radius: 8px;
+            text-align: center;
         }
         
         .outfit-item img {
@@ -166,12 +170,15 @@
             height: 60px;
             object-fit: cover;
             border-radius: 8px;
-            margin-right: 15px;
+            margin-bottom: 8px;
             border: 2px solid rgba(255, 255, 255, 0.2);
         }
         
-        .outfit-info {
-            flex: 1;
+        .outfit-name {
+            font-size: 0.8rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         
         .loading {
@@ -223,6 +230,10 @@
             
             .input-group button {
                 border-radius: 8px;
+            }
+            
+            .outfit-container {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
@@ -341,12 +352,12 @@
             });
             
             function checkBan(uid) {
-                return fetch(`https://cors-anywhere.herokuapp.com/http://raw.thug4ff.com/check_ban/${uid}`)
+                return fetch(`https://corsproxy.io/?http://raw.thug4ff.com/check_ban/${uid}`)
                     .then(response => response.text())
                     .then(data => {
-                        if (data.includes('not banned') || data.includes('false')) {
+                        if (data.includes('not banned') || data.includes('false') || data === '0') {
                             banStatus.innerHTML = '<p class="not-banned"><i class="fas fa-check-circle"></i> Tài khoản không bị ban</p>';
-                        } else if (data.includes('banned') || data.includes('true')) {
+                        } else if (data.includes('banned') || data.includes('true') || data === '1') {
                             banStatus.innerHTML = '<p class="banned"><i class="fas fa-times-circle"></i> Tài khoản đã bị ban</p>';
                         } else {
                             banStatus.innerHTML = `<p>Kết quả: ${data}</p>`;
@@ -359,7 +370,7 @@
             }
             
             function getAccountInfo(uid) {
-                return fetch(`https://cors-anywhere.herokuapp.com/http://raw.thug4ff.com/info?uid=${uid}`)
+                return fetch(`https://corsproxy.io/?http://raw.thug4ff.com/info?uid=${uid}`)
                     .then(response => response.json())
                     .then(data => {
                         let html = '';
@@ -369,7 +380,7 @@
                                     html += `
                                         <div class="info-item">
                                             <span>${formatKey(key)}:</span>
-                                            <span>${data[key]}</span>
+                                            <span>${data[key] || 'N/A'}</span>
                                         </div>
                                     `;
                                 }
@@ -386,7 +397,7 @@
             }
             
             function getProfileCard(uid) {
-                return fetch(`https://cors-anywhere.herokuapp.com/http://profile.thug4ff.com/api/profile_card?uid=${uid}`)
+                return fetch(`https://corsproxy.io/?http://profile.thug4ff.com/api/profile_card?uid=${uid}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data && data.success && data.data && data.data.card) {
@@ -402,26 +413,32 @@
             }
             
             function getOutfitInfo(uid) {
-                return fetch(`https://cors-anywhere.herokuapp.com/http://profile.thug4ff.com/api/profile?uid=${uid}`)
+                return fetch(`https://corsproxy.io/?http://profile.thug4ff.com/api/profile?uid=${uid}`)
                     .then(response => response.json())
                     .then(data => {
                         let html = '';
                         if (data && data.success && data.data && data.data.wearing) {
                             const wearing = data.data.wearing;
+                            html = '<div class="outfit-container">';
                             
                             for (const key in wearing) {
                                 if (wearing.hasOwnProperty(key)) {
                                     const item = wearing[key];
-                                    html += `
-                                        <div class="outfit-item">
-                                            <img src="${item.icon || 'https://via.placeholder.com/60'}" alt="${item.name}">
-                                            <div class="outfit-info">
-                                                <div><strong>${formatKey(key)}</strong></div>
-                                                <div>${item.name || 'Không rõ'}</div>
+                                    if (item && item.name) {
+                                        html += `
+                                            <div class="outfit-item">
+                                                <img src="${item.icon || 'https://via.placeholder.com/60'}" alt="${item.name}">
+                                                <div class="outfit-name">${item.name}</div>
                                             </div>
-                                        </div>
-                                    `;
+                                        `;
+                                    }
                                 }
+                            }
+                            
+                            html += '</div>';
+                            
+                            if (html === '<div class="outfit-container"></div>') {
+                                html = '<p>Không có thông tin trang phục</p>';
                             }
                         } else {
                             html = '<p>Không có thông tin trang phục</p>';
@@ -435,9 +452,18 @@
             }
             
             function formatKey(key) {
-                return key
-                    .replace(/_/g, ' ')
-                    .replace(/\b\w/g, l => l.toUpperCase());
+                const keyMap = {
+                    'name': 'Tên',
+                    'level': 'Cấp độ',
+                    'exp': 'Kinh nghiệm',
+                    'gold': 'Vàng',
+                    'diamond': 'Kim cương',
+                    'rank': 'Hạng',
+                    'kills': 'Số kill',
+                    'matches': 'Số trận'
+                };
+                
+                return keyMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             }
             
             function showError(message) {
