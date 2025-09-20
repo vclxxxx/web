@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Fire Account Checker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #fff;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .search-box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .input-group {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .input-group input {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px 0 0 8px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .input-group button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            background: #ff6b6b;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .input-group button:hover {
+            background: #ff5252;
+        }
+        
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            width: 100%;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        .profile-card {
+            text-align: center;
+        }
+        
+        .profile-card img {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .ban-status {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .banned {
+            color: #ff6b6b;
+        }
+        
+        .not-banned {
+            color: #6bff6b;
+        }
+        
+        .outfit-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .outfit-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .outfit-info {
+            flex: 1;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .results {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .input-group input {
+                border-radius: 8px;
+                margin-bottom: 10px;
+            }
+            
+            .input-group button {
+                border-radius: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Free Fire Account Checker</h1>
+            <p>Kiểm tra thông tin tài khoản Free Fire nhanh chóng và dễ dàng</p>
+        </header>
+        
+        <div class="search-box">
+            <div class="input-group">
+                <input type="text" id="uidInput" placeholder="Nhập UID tài khoản Free Fire...">
+                <button id="checkButton"><i class="fas fa-search"></i> Kiểm tra</button>
+            </div>
+            <p>Ví dụ: 1234567890</p>
+        </div>
+        
+        <div class="loading" id="loading">
+            <i class="fas fa-spinner"></i>
+            <p>Đang tải dữ liệu...</p>
+        </div>
+        
+        <div class="error" id="error">
+            <p><i class="fas fa-exclamation-circle"></i> <span id="errorMessage"></span></p>
+        </div>
+        
+        <div class="results" id="results">
+            <div class="card profile-card">
+                <div class="card-header">
+                    <i class="fas fa-id-card"></i> Ảnh Bìa Hồ Sơ
+                </div>
+                <div class="card-body" id="profileCard">
+                    <p>Nhập UID để xem ảnh bìa</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-info-circle"></i> Thông Tin Tài Khoản
+                </div>
+                <div class="card-body" id="accountInfo">
+                    <p>Nhập UID để xem thông tin</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-ban"></i> Tình Trạng Ban
+                </div>
+                <div class="card-body">
+                    <div class="ban-status" id="banStatus">
+                        <p>Nhập UID để kiểm tra</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-tshirt"></i> Trang Phục Đang Mặc
+                </div>
+                <div class="card-body" id="outfitInfo">
+                    <p>Nhập UID để xem trang phục</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Free Fire Account Checker &copy; 2023 - Công cụ kiểm tra thông tin tài khoản Free Fire</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uidInput = document.getElementById('uidInput');
+            const checkButton = document.getElementById('checkButton');
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const errorMessage = document.getElementById('errorMessage');
+            const profileCard = document.getElementById('profileCard');
+            const accountInfo = document.getElementById('accountInfo');
+            const banStatus = document.getElementById('banStatus');
+            const outfitInfo = document.getElementById('outfitInfo');
+            
+            checkButton.addEventListener('click', function() {
+                const uid = uidInput.value.trim();
+                
+                if (!uid) {
+                    showError('Vui lòng nhập UID tài khoản!');
+                    return;
+                }
+                
+                // Kiểm tra UID có phải là số không
+                if (!/^\d+$/.test(uid)) {
+                    showError('UID phải là một dãy số!');
+                    return;
+                }
+                
+                resetResults();
+                loading.style.display = 'block';
+                error.style.display = 'none';
+                
+                // Gọi các API
+                Promise.all([
+                    checkBan(uid),
+                    getAccountInfo(uid),
+                    getProfileCard(uid),
+                    getOutfitInfo(uid)
+                ]).then(() => {
+                    loading.style.display = 'none';
+                }).catch(err => {
+                    loading.style.display = 'none';
+                    showError('Có lỗi xảy ra khi tải dữ liệu: ' + err.message);
+                });
+            });
+            
+            function checkBan(uid) {
+                return fetch(`https://cors-anywhere.herokuapp.com/http://raw.thug4ff.com/check_ban/${uid}`)
+                    .then(response => response.text())
+                    .then(data => {
+                        if (data.includes('not banned') || data.includes('false')) {
+                            banStatus.innerHTML = '<p class="not-banned"><i class="fas fa-check-circle"></i> Tài khoản không bị ban</p>';
+                        } else if (data.includes('banned') || data.includes('true')) {
+                            banStatus.innerHTML = '<p class="banned"><i class="fas fa-times-circle"></i> Tài khoản đã bị ban</p>';
+                        } else {
+                            banStatus.innerHTML = `<p>Kết quả: ${data}</p>`;
+                        }
+                    })
+                    .catch(err => {
+                        banStatus.innerHTML = '<p>Không thể kiểm tra tình trạng ban</p>';
+                        console.error('Error checking ban status:', err);
+                    });
+            }
+            
+            function getAccountInfo(uid) {
+                return fetch(`https://cors-anywhere.herokuapp.com/http://raw.thug4ff.com/info?uid=${uid}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        let html = '';
+                        if (data && typeof data === 'object') {
+                            for (const key in data) {
+                                if (data.hasOwnProperty(key)) {
+                                    html += `
+                                        <div class="info-item">
+                                            <span>${formatKey(key)}:</span>
+                                            <span>${data[key]}</span>
+                                        </div>
+                                    `;
+                                }
+                            }
+                        } else {
+                            html = '<p>Không có thông tin tài khoản</p>';
+                        }
+                        accountInfo.innerHTML = html;
+                    })
+                    .catch(err => {
+                        accountInfo.innerHTML = '<p>Không thể tải thông tin tài khoản</p>';
+                        console.error('Error fetching account info:', err);
+                    });
+            }
+            
+            function getProfileCard(uid) {
+                return fetch(`https://cors-anywhere.herokuapp.com/http://profile.thug4ff.com/api/profile_card?uid=${uid}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.success && data.data && data.data.card) {
+                            profileCard.innerHTML = `<img src="data:image/png;base64,${data.data.card}" alt="Profile Card">`;
+                        } else {
+                            profileCard.innerHTML = '<p>Không thể tải ảnh bìa hồ sơ</p>';
+                        }
+                    })
+                    .catch(err => {
+                        profileCard.innerHTML = '<p>Không thể tải ảnh bìa hồ sơ</p>';
+                        console.error('Error fetching profile card:', err);
+                    });
+            }
+            
+            function getOutfitInfo(uid) {
+                return fetch(`https://cors-anywhere.herokuapp.com/http://profile.thug4ff.com/api/profile?uid=${uid}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        let html = '';
+                        if (data && data.success && data.data && data.data.wearing) {
+                            const wearing = data.data.wearing;
+                            
+                            for (const key in wearing) {
+                                if (wearing.hasOwnProperty(key)) {
+                                    const item = wearing[key];
+                                    html += `
+                                        <div class="outfit-item">
+                                            <img src="${item.icon || 'https://via.placeholder.com/60'}" alt="${item.name}">
+                                            <div class="outfit-info">
+                                                <div><strong>${formatKey(key)}</strong></div>
+                                                <div>${item.name || 'Không rõ'}</div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+                            }
+                        } else {
+                            html = '<p>Không có thông tin trang phục</p>';
+                        }
+                        outfitInfo.innerHTML = html;
+                    })
+                    .catch(err => {
+                        outfitInfo.innerHTML = '<p>Không thể tải thông tin trang phục</p>';
+                        console.error('Error fetching outfit info:', err);
+                    });
+            }
+            
+            function formatKey(key) {
+                return key
+                    .replace(/_/g, ' ')
+                    .replace(/\b\w/g, l => l.toUpperCase());
+            }
+            
+            function showError(message) {
+                errorMessage.textContent = message;
+                error.style.display = 'block';
+            }
+            
+            function resetResults() {
+                profileCard.innerHTML = '<p>Đang tải ảnh bìa...</p>';
+                accountInfo.innerHTML = '<p>Đang tải thông tin...</p>';
+                banStatus.innerHTML = '<p>Đang kiểm tra...</p>';
+                outfitInfo.innerHTML = '<p>Đang tải trang phục...</p>';
+            }
+        });
+    </script>
+</body>
+</html>
